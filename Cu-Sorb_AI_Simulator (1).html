@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cu-Sorb AI Simulator</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .color-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .color-inputs input {
+            border-left: 5px solid;
+        }
+
+        #inputR {
+            border-left-color: red;
+        }
+
+        #inputG {
+            border-left-color: green;
+        }
+
+        #inputB {
+            border-left-color: #0056b3;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #004494;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9f5e9;
+            border: 1px solid #c3e6c3;
+            border-radius: 6px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-box h3 {
+            margin: 0 0 10px 0;
+            color: #2e8b57;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #111;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #999;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🔬 Cu-Sorb AI Simulator</h1>
+
+    <p class="subtitle">
+        ระบบทำนายปริมาณทองแดงตกค้างจากข้อมูลสีดิจิทัล
+    </p>
+
+    <div class="form-group">
+        <label>ระยะเวลาทำปฏิกิริยาฟอสฟอริเลชั่น:</label>
+
+        <select id="inputTime">
+            <option value="30">30 นาที</option>
+            <option value="60">60 นาที</option>
+            <option value="90">90 นาที</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>ความเข้มข้นกรดฟอสฟอริก (H₃PO₄):</label>
+
+        <select id="inputAcid">
+            <option value="10">10%</option>
+            <option value="20">20%</option>
+            <option value="30">30%</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>ข้อมูลสี RGB จากแอปพลิเคชัน (0-255):</label>
+
+        <div class="color-inputs">
+            <input type="number" id="inputR" placeholder="R (แดง)" min="0" max="255">
+
+            <input type="number" id="inputG" placeholder="G (เขียว)" min="0" max="255">
+
+            <input type="number" id="inputB" placeholder="B (น้ำเงิน)" min="0" max="255">
+        </div>
+    </div>
+
+    <button onclick="calculatePrediction()">
+        ประมวลผลข้อมูลจำลอง
+    </button>
+
+    <div class="result-box" id="resultBox">
+
+        <h3>ผลการวิเคราะห์ (Prediction)</h3>
+
+        <p>
+            ทองแดงตกค้างในสารละลาย:
+            <br>
+            <span class="value" id="outPpm">0.00</span> ppm
+        </p>
+
+        <p>
+            ประสิทธิภาพการดูดซับของเซลลูโลส:
+            <br>
+            <span class="value" id="outPercent">0.00</span> %
+        </p>
+
+    </div>
+
+    <div class="footer">
+        * ข้อมูลนี้ประมวลผลผ่านสมการ Multiple Linear Regression เพื่อการจำลองการทำงาน
+    </div>
+
+</div>
+
+<script>
+
+function calculatePrediction() {
+
+    let time = parseFloat(document.getElementById('inputTime').value);
+    let acid = parseFloat(document.getElementById('inputAcid').value);
+
+    let R = parseFloat(document.getElementById('inputR').value);
+    let G = parseFloat(document.getElementById('inputG').value);
+    let B = parseFloat(document.getElementById('inputB').value);
+
+    if (
+        isNaN(R) ||
+        isNaN(G) ||
+        isNaN(B)
+    ) {
+        alert("กรุณากรอกค่า RGB ให้ครบ");
+        return;
+    }
+
+    let ppm =
+        25
+        - (0.03 * time)
+        - (0.15 * acid)
+        - (0.02 * R)
+        - (0.015 * G)
+        - (0.01 * B);
+
+    if (ppm < 0) {
+        ppm = 0;
+    }
+
+    let adsorption =
+        ((25 - ppm) / 25) * 100;
+
+    document.getElementById('outPpm').innerText =
+        ppm.toFixed(2);
+
+    document.getElementById('outPercent').innerText =
+        adsorption.toFixed(2);
+
+    document.getElementById('resultBox').style.display =
+        "block";
+}
+
+</script>
+
+</body>
+</html>
